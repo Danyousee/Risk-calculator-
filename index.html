@@ -1,0 +1,1503 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
+    <title>Perpetual Risk Calculator + Journal</title>
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+    <style>
+        /* ===========================
+           RESET & ANIMATION
+        ============================ */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        html {
+            font-size: 16px;
+        }
+
+        body {
+            background: #f4f8ff;
+            color: #1d3557;
+            padding: 12px;
+            min-height: 100vh;
+            display: flex;
+            align-items: flex-start;
+            justify-content: center;
+        }
+
+        .container {
+            max-width: 500px;
+            width: 100%;
+            margin: 0 auto;
+            padding: 0 4px;
+        }
+
+        /* ===========================
+           ANIMATED CARDS
+        ============================ */
+        .card {
+            animation: fade .4s ease;
+            background: #fff;
+            border-radius: 20px;
+            padding: 16px;
+            margin-bottom: 14px;
+            box-shadow: 0 8px 20px rgba(20, 70, 150, .07);
+            transition: all 0.2s;
+        }
+
+        @keyframes fade {
+            from {
+                opacity: 0;
+                transform: translateY(12px);
+            }
+            to {
+                opacity: 1;
+                transform: none;
+            }
+        }
+
+        /* ===========================
+           HEADER
+        ============================ */
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+            padding: 0 4px;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        header h1 {
+            font-size: 22px;
+            font-weight: 700;
+            line-height: 1.2;
+        }
+        header p {
+            color: #6b7b93;
+            margin-top: 2px;
+            font-size: 13px;
+        }
+        .header-actions {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+        .nav-btn {
+            border: none;
+            background: #eaf2ff;
+            color: #1565ff;
+            padding: 8px 14px;
+            border-radius: 30px;
+            font-weight: 700;
+            cursor: pointer;
+            font-size: 13px;
+            box-shadow: 0 4px 12px rgba(0, 80, 255, .08);
+            transition: all 0.2s;
+            white-space: nowrap;
+        }
+        .nav-btn.active {
+            background: #1565ff;
+            color: #fff;
+        }
+        .nav-btn:active {
+            transform: scale(0.97);
+        }
+
+        /* ===========================
+           ACCOUNT CARD
+        ============================ */
+        .account-card {
+            padding: 20px;
+        }
+        .card-title {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 14px;
+            font-size: 16px;
+            font-weight: 700;
+        }
+        .card-title small {
+            color: #8192a8;
+            font-weight: 500;
+            font-size: 14px;
+        }
+        .account-card .card-title span i {
+            color: #1565ff;
+        }
+
+        /* ===========================
+           INPUTS / SELECTS
+        ============================ */
+        input,
+        select,
+        textarea {
+            width: 100%;
+            height: 48px;
+            border-radius: 16px;
+            border: 2px solid #dfe8ff;
+            padding: 10px 14px;
+            font-size: 18px;
+            background: #fbfdff;
+            outline: none;
+            transition: .25s;
+            -webkit-appearance: none;
+            appearance: none;
+        }
+        textarea {
+            height: 80px;
+            resize: vertical;
+            font-size: 15px;
+            font-family: inherit;
+        }
+        input:focus,
+        select:focus,
+        textarea:focus {
+            border-color: #1565ff;
+        }
+        input[type="number"] {
+            -moz-appearance: textfield;
+        }
+        input[type="number"]::-webkit-inner-spin-button,
+        input[type="number"]::-webkit-outer-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+
+        label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 6px;
+            font-weight: 700;
+            font-size: 15px;
+        }
+
+        /* ===========================
+           BLUE ICONS for Entry, Stop, Take Profit, Trade Direction
+        ============================ */
+        .blue-icon i {
+            color: #1565ff !important;
+        }
+        .blue-icon label i {
+            color: #1565ff !important;
+        }
+        .blue-icon .direction button i {
+            color: #1565ff !important;
+        }
+        .blue-icon .direction .active i {
+            color: #fff !important;
+        }
+
+        /* ===========================
+           LAYOUT
+        ============================ */
+        .two-column {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+        .settings {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
+        /* ===========================
+           DIRECTION TOGGLE
+        ============================ */
+        .direction {
+            display: flex;
+            gap: 10px;
+        }
+        .direction button {
+            flex: 1;
+            height: 44px;
+            border: none;
+            border-radius: 16px;
+            background: #eef4ff;
+            font-size: 15px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: .3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 0 8px;
+        }
+        .direction button i {
+            font-size: 17px;
+            transition: .3s;
+            color: #1565ff;
+        }
+        .direction .active {
+            background: #1565ff;
+            color: #fff;
+        }
+        .direction .active i {
+            color: #fff;
+        }
+        .direction button:not(.active):hover {
+            background: #dce6ff;
+        }
+        .direction button:active {
+            transform: scale(0.97);
+        }
+
+        /* ===========================
+           RISK SLIDER
+        ============================ */
+        .risk-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 14px;
+            gap: 12px;
+        }
+        .risk-top span {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 15px;
+            font-weight: 600;
+        }
+        .risk-top span i {
+            color: #1565ff;
+        }
+        #riskValue {
+            background: #1565ff;
+            color: white;
+            padding: 6px 16px;
+            border-radius: 20px;
+            font-size: 17px;
+            font-weight: bold;
+            min-width: 48px;
+            text-align: center;
+        }
+        input[type=range] {
+            height: 6px;
+            padding: 0;
+            border: none;
+            background: #d9e4ff;
+            border-radius: 4px;
+            -webkit-appearance: none;
+            appearance: none;
+            width: 100%;
+        }
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #1565ff;
+            cursor: pointer;
+            transition: .2s;
+        }
+        input[type=range]::-moz-range-thumb {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #1565ff;
+            cursor: pointer;
+            border: none;
+        }
+
+        /* ===========================
+           MARGIN REQUIRED CARD
+        ============================ */
+        .margin-card .result-line {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 16px;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+        .margin-card .result-line span {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 600;
+        }
+        .margin-card .result-line span i {
+            font-size: 20px;
+            color: #1565ff;
+            background: #eaf2ff;
+            padding: 6px;
+            border-radius: 12px;
+            width: 38px;
+            height: 38px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+        .margin-card .result-line strong {
+            color: #1565ff;
+            font-size: 22px;
+            font-weight: 700;
+        }
+
+        /* ===========================
+           RESULTS GRID
+        ============================ */
+        .results-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+        .result-card {
+            background: #fff;
+            border-radius: 18px;
+            padding: 14px;
+            box-shadow: 0 6px 14px rgba(0, 0, 0, .04);
+            animation: fade .4s ease;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .result-card:active {
+            transform: scale(0.98);
+        }
+        .result-card small {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            color: #708090;
+            margin-bottom: 6px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        .result-card small i {
+            font-size: 12px;
+            color: #1565ff;
+            width: 16px;
+            text-align: center;
+        }
+        .result-card h2 {
+            color: #1565ff;
+            font-size: 22px;
+            font-weight: 700;
+            letter-spacing: -0.3px;
+            word-break: break-word;
+        }
+        .red h2 {
+            color: #ff3b4a;
+        }
+        .status-safe h2 { color: #22a65e; }
+        .status-high h2 { color: #f9a825; }
+        .status-danger h2 { color: #ff3b4a; }
+
+        /* ===========================
+           BUTTONS
+        ============================ */
+        .buttons {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 16px;
+            flex-wrap: wrap;
+        }
+        .buttons button {
+            flex: 1;
+            height: 50px;
+            border: none;
+            border-radius: 16px;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            min-width: 80px;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 0 12px;
+        }
+        .buttons button:active {
+            transform: scale(0.96);
+        }
+        .primary {
+            background: #1565ff;
+            color: white;
+        }
+        .primary:active {
+            background: #0d4fd0;
+        }
+        .secondary {
+            background: white;
+            color: #1d3557;
+            border: 2px solid #dfe8ff !important;
+        }
+        .secondary:active {
+            background: #f8faff;
+        }
+        .copy-btn {
+            background: #eaf2ff;
+            color: #1565ff;
+            border: none;
+        }
+        .copy-btn:active {
+            background: #d6e4ff;
+        }
+        .danger-btn {
+            background: #ff3b4a;
+            color: white;
+        }
+        .danger-btn:active {
+            background: #d32f2f;
+        }
+        .success-btn {
+            background: #22a65e;
+            color: white;
+        }
+        .success-btn:active {
+            background: #1a7a45;
+        }
+
+        /* ===========================
+           JOURNAL SECTION
+        ============================ */
+        .journal-section {
+            display: none;
+        }
+        .journal-section.active {
+            display: block;
+        }
+        .calculator-section {
+            display: block;
+        }
+        .calculator-section.hidden {
+            display: none;
+        }
+
+        .journal-entry {
+            background: #f8faff;
+            border-radius: 16px;
+            padding: 14px;
+            margin-bottom: 12px;
+            border-left: 4px solid #1565ff;
+            transition: all 0.2s;
+        }
+        .journal-entry .entry-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+            flex-wrap: wrap;
+            gap: 6px;
+        }
+        .journal-entry .entry-header .entry-date {
+            font-size: 13px;
+            color: #708090;
+            font-weight: 600;
+        }
+        .journal-entry .entry-header .entry-actions {
+            display: flex;
+            gap: 6px;
+        }
+        .journal-entry .entry-header .entry-actions button {
+            border: none;
+            background: none;
+            cursor: pointer;
+            padding: 4px 8px;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: all 0.2s;
+        }
+        .journal-entry .entry-header .entry-actions .delete-entry {
+            color: #ff3b4a;
+        }
+        .journal-entry .entry-header .entry-actions .delete-entry:hover {
+            background: #ffebee;
+        }
+        .journal-entry .entry-details {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 6px;
+            font-size: 14px;
+        }
+        .journal-entry .entry-details span {
+            color: #1d3557;
+        }
+        .journal-entry .entry-details .label {
+            color: #708090;
+            font-weight: 600;
+        }
+        .journal-entry .entry-notes {
+            margin-top: 8px;
+            padding-top: 8px;
+            border-top: 1px solid #dfe8ff;
+            font-size: 14px;
+            color: #4a5a6a;
+        }
+
+        .journal-form {
+            background: #f8faff;
+            border-radius: 16px;
+            padding: 16px;
+            margin-bottom: 16px;
+        }
+        .journal-form .form-row {
+            margin-bottom: 12px;
+        }
+        .journal-form .form-row label {
+            font-size: 14px;
+            margin-bottom: 4px;
+        }
+        .journal-form .form-row input,
+        .journal-form .form-row select,
+        .journal-form .form-row textarea {
+            height: 42px;
+            font-size: 16px;
+            padding: 8px 12px;
+        }
+        .journal-form .form-row textarea {
+            height: 60px;
+        }
+        .journal-form .form-actions {
+            display: flex;
+            gap: 10px;
+        }
+        .journal-form .form-actions button {
+            flex: 1;
+            height: 44px;
+            border: none;
+            border-radius: 14px;
+            font-size: 15px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .journal-form .form-actions button:active {
+            transform: scale(0.96);
+        }
+
+        .journal-stats {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 16px;
+        }
+        .journal-stat {
+            background: #fff;
+            border-radius: 16px;
+            padding: 12px;
+            text-align: center;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, .04);
+        }
+        .journal-stat .stat-value {
+            font-size: 22px;
+            font-weight: 700;
+            color: #1565ff;
+        }
+        .journal-stat .stat-label {
+            font-size: 12px;
+            color: #708090;
+            margin-top: 2px;
+        }
+        .journal-stat .stat-value.positive {
+            color: #22a65e;
+        }
+        .journal-stat .stat-value.negative {
+            color: #ff3b4a;
+        }
+
+        .empty-journal {
+            text-align: center;
+            padding: 40px 20px;
+            color: #708090;
+        }
+        .empty-journal i {
+            font-size: 48px;
+            color: #dfe8ff;
+            margin-bottom: 12px;
+        }
+
+        /* ===========================
+           MOBILE OPTIMIZATIONS
+        ============================ */
+        @media(max-width:480px) {
+            body {
+                padding: 8px;
+            }
+            .card {
+                padding: 12px;
+                margin-bottom: 10px;
+                border-radius: 16px;
+            }
+            header h1 {
+                font-size: 19px;
+            }
+            .nav-btn {
+                font-size: 12px;
+                padding: 6px 12px;
+            }
+            .account-card {
+                padding: 14px;
+            }
+            .card-title {
+                font-size: 14px;
+                margin-bottom: 10px;
+            }
+            input,
+            select,
+            textarea {
+                height: 42px;
+                font-size: 16px;
+                padding: 8px 12px;
+                border-radius: 14px;
+            }
+            textarea {
+                height: 60px;
+            }
+            label {
+                font-size: 14px;
+                margin-bottom: 4px;
+            }
+            .two-column {
+                gap: 8px;
+            }
+            .settings {
+                gap: 8px;
+            }
+            .direction button {
+                height: 40px;
+                font-size: 13px;
+                border-radius: 14px;
+            }
+            .direction button i {
+                font-size: 15px;
+            }
+            .risk-top {
+                margin-bottom: 10px;
+            }
+            .risk-top span {
+                font-size: 14px;
+            }
+            #riskValue {
+                font-size: 15px;
+                padding: 4px 12px;
+                min-width: 40px;
+            }
+            .margin-card .result-line {
+                font-size: 14px;
+            }
+            .margin-card .result-line span i {
+                font-size: 17px;
+                width: 34px;
+                height: 34px;
+                padding: 5px;
+                border-radius: 10px;
+            }
+            .margin-card .result-line strong {
+                font-size: 19px;
+            }
+            .results-grid {
+                gap: 8px;
+            }
+            .result-card {
+                padding: 10px;
+                border-radius: 14px;
+            }
+            .result-card small {
+                font-size: 11px;
+                margin-bottom: 4px;
+            }
+            .result-card small i {
+                font-size: 11px;
+                width: 14px;
+            }
+            .result-card h2 {
+                font-size: 18px;
+            }
+            .buttons button {
+                height: 44px;
+                font-size: 14px;
+                min-width: 70px;
+                border-radius: 14px;
+            }
+            .journal-stats {
+                grid-template-columns: 1fr 1fr 1fr;
+                gap: 6px;
+            }
+            .journal-stat {
+                padding: 8px;
+            }
+            .journal-stat .stat-value {
+                font-size: 18px;
+            }
+            .journal-stat .stat-label {
+                font-size: 11px;
+            }
+            .journal-entry .entry-details {
+                grid-template-columns: 1fr 1fr;
+                font-size: 13px;
+            }
+            .journal-form .form-row input,
+            .journal-form .form-row select,
+            .journal-form .form-row textarea {
+                height: 38px;
+                font-size: 15px;
+            }
+            .journal-form .form-row textarea {
+                height: 50px;
+            }
+        }
+
+        @media(max-width:380px) {
+            .two-column {
+                grid-template-columns: 1fr 1fr;
+                gap: 6px;
+            }
+            .settings {
+                grid-template-columns: 1fr 1fr;
+                gap: 6px;
+            }
+            .results-grid {
+                gap: 6px;
+            }
+            .result-card h2 {
+                font-size: 16px;
+            }
+            .card {
+                padding: 10px;
+                margin-bottom: 8px;
+            }
+            input,
+            select {
+                height: 38px;
+                font-size: 14px;
+                padding: 6px 10px;
+            }
+        }
+
+        /* Prevent zoom on input focus for iOS */
+        @supports (-webkit-touch-callout: none) {
+            input,
+            select,
+            textarea {
+                font-size: 16px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+
+    <!-- Header -->
+    <header>
+        <div>
+            <h1>Perpetual Risk Calculator</h1>
+            <p>Modern • Accurate • Real-time</p>
+        </div>
+        <div class="header-actions">
+            <button id="calcTabBtn" class="nav-btn active"><i class="fa-solid fa-calculator"></i> Calc</button>
+            <button id="journalTabBtn" class="nav-btn"><i class="fa-solid fa-book"></i> Journal</button>
+        </div>
+    </header>
+
+    <!-- ======================== -->
+    <!-- CALCULATOR SECTION -->
+    <!-- ======================== -->
+    <div id="calculatorSection" class="calculator-section">
+
+        <!-- Account Balance -->
+        <section class="card account-card">
+            <div class="card-title">
+                <span><i class="fa-solid fa-wallet"></i> Account Balance (USDT)</span>
+                <small>Collateral</small>
+            </div>
+            <input id="balance" type="number" placeholder="10" inputmode="decimal">
+        </section>
+
+        <!-- Trade Direction with Blue Icons -->
+        <section class="card blue-icon">
+            <label><i class="fa-solid fa-arrow-right-arrow-left"></i> Trade Direction</label>
+            <div class="direction">
+                <button id="longBtn" class="active">
+                    <i class="fa-solid fa-arrow-trend-up"></i> Long
+                </button>
+                <button id="shortBtn">
+                    <i class="fa-solid fa-arrow-trend-down"></i> Short
+                </button>
+            </div>
+        </section>
+
+        <!-- Entry + Stop with Blue Icons -->
+        <section class="card two-column blue-icon">
+            <div class="field">
+                <label><i class="fa-solid fa-arrow-up"></i> Entry Price</label>
+                <input id="entry" type="number" inputmode="decimal" step="any">
+            </div>
+            <div class="field">
+                <label><i class="fa-solid fa-arrow-down"></i> Stop Loss</label>
+                <input id="stop" type="number" inputmode="decimal" step="any">
+            </div>
+        </section>
+
+        <!-- Take Profit with Blue Icon -->
+        <section class="card blue-icon">
+            <label><i class="fa-solid fa-bullseye"></i> Take Profit</label>
+            <input id="takeprofit" type="number" inputmode="decimal" step="any">
+        </section>
+
+        <!-- Risk -->
+        <section class="card risk-card">
+            <div class="risk-top">
+                <span><i class="fa-solid fa-triangle-exclamation"></i> Risk per Trade</span>
+                <div id="riskValue">5%</div>
+            </div>
+            <input id="riskSlider" type="range" min="0.1" max="10" step="0.1" value="5">
+        </section>
+
+        <!-- Settings -->
+        <section class="settings">
+            <div class="card icon-card">
+                <div class="card-header" style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
+                    <i style="font-size:18px;color:#1565ff;background:#eaf2ff;padding:6px;border-radius:12px;width:38px;height:38px;display:flex;align-items:center;justify-content:center;flex-shrink:0;" class="fa-solid fa-layer-group"></i>
+                    <label style="margin-bottom:0;font-size:15px;font-weight:700;">Margin Mode</label>
+                </div>
+                <select id="marginMode">
+                    <option>Cross</option>
+                    <option selected>Isolated</option>
+                </select>
+            </div>
+            <div class="card icon-card">
+                <div class="card-header" style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
+                    <i style="font-size:18px;color:#1565ff;background:#eaf2ff;padding:6px;border-radius:12px;width:38px;height:38px;display:flex;align-items:center;justify-content:center;flex-shrink:0;" class="fa-solid fa-coins"></i>
+                    <label style="margin-bottom:0;font-size:15px;font-weight:700;">Fee</label>
+                </div>
+                <select id="fee">
+                    <option value="0.02">Maker 0.02%</option>
+                    <option value="0.055" selected>Taker 0.055%</option>
+                    <option value="0.075">High Fee</option>
+                </select>
+            </div>
+        </section>
+
+        <!-- Leverage -->
+        <section class="card icon-card">
+            <div class="card-header" style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
+                <i style="font-size:18px;color:#1565ff;background:#eaf2ff;padding:6px;border-radius:12px;width:38px;height:38px;display:flex;align-items:center;justify-content:center;flex-shrink:0;" class="fa-solid fa-right-left"></i>
+                <label style="margin-bottom:0;font-size:15px;font-weight:700;">Leverage</label>
+            </div>
+            <select id="leverage">
+                <option>1x</option><option>2x</option><option>5x</option><option>10x</option>
+                <option>20x</option><option selected>50x</option><option>75x</option><option>100x</option>
+            </select>
+        </section>
+
+        <!-- Margin Required -->
+        <section class="card margin-card">
+            <div class="result-line">
+                <span>
+                    <i class="fa-solid fa-coins"></i>
+                    Margin Required
+                </span>
+                <strong id="margin">0.00 USDT</strong>
+            </div>
+        </section>
+
+        <!-- Results -->
+        <section class="results-grid">
+            <div class="result-card">
+                <small><i class="fa-solid fa-expand"></i> Position Size</small>
+                <h2 id="position">0.00</h2>
+            </div>
+            <div class="result-card red">
+                <small><i class="fa-solid fa-triangle-exclamation"></i> Risk</small>
+                <h2 id="riskAmount">0.00</h2>
+            </div>
+            <div class="result-card">
+                <small><i class="fa-solid fa-gift"></i> Reward</small>
+                <h2 id="reward">0.00</h2>
+            </div>
+            <div class="result-card">
+                <small><i class="fa-solid fa-scale-balanced"></i> R:R Ratio</small>
+                <h2 id="rr">0 : 0</h2>
+            </div>
+            <div class="result-card">
+                <small><i class="fa-solid fa-receipt"></i> Fee Impact</small>
+                <h2 id="feeCost">0.00</h2>
+            </div>
+            <div class="result-card">
+                <small><i class="fa-solid fa-skull"></i> Liquidation</small>
+                <h2 id="liq">--</h2>
+            </div>
+            <div class="result-card">
+                <small><i class="fa-solid fa-arrow-trend-up"></i> Breakeven</small>
+                <h2 id="breakeven">--</h2>
+            </div>
+            <div class="result-card" id="statusCard">
+                <small><i class="fa-solid fa-shield-halved"></i> Risk Status</small>
+                <h2 id="status">Safe</h2>
+            </div>
+        </section>
+
+        <!-- Buttons -->
+        <div class="buttons">
+            <button id="calculate" class="primary"><i class="fa-solid fa-calculator"></i> Calculate</button>
+            <button id="reset" class="secondary"><i class="fa-solid fa-rotate"></i> Reset</button>
+            <button id="copy" class="copy-btn"><i class="fa-regular fa-copy"></i> Copy</button>
+            <button id="saveToJournalBtn" class="success-btn"><i class="fa-solid fa-floppy-disk"></i> Save</button>
+        </div>
+
+    </div>
+
+    <!-- ======================== -->
+    <!-- JOURNAL SECTION -->
+    <!-- ======================== -->
+    <div id="journalSection" class="journal-section">
+
+        <!-- Journal Stats -->
+        <div class="journal-stats" id="journalStats">
+            <div class="journal-stat">
+                <div class="stat-value" id="totalTrades">0</div>
+                <div class="stat-label">Total Trades</div>
+            </div>
+            <div class="journal-stat">
+                <div class="stat-value" id="winRate">0%</div>
+                <div class="stat-label">Win Rate</div>
+            </div>
+            <div class="journal-stat">
+                <div class="stat-value" id="totalPnL">0.00</div>
+                <div class="stat-label">Total P&L (USDT)</div>
+            </div>
+        </div>
+
+        <!-- Add Entry Form -->
+        <div class="card">
+            <h3 style="margin-bottom:12px;font-size:17px;"><i class="fa-solid fa-plus-circle" style="color:#1565ff;"></i> Add Trade Entry</h3>
+            <div class="journal-form">
+                <div class="form-row">
+                    <label>Pair / Asset</label>
+                    <input id="journalPair" type="text" placeholder="e.g., BTC/USDT" value="BTC/USDT">
+                </div>
+                <div class="form-row two-column">
+                    <div>
+                        <label>Entry Price</label>
+                        <input id="journalEntry" type="number" inputmode="decimal" step="any" placeholder="0.00">
+                    </div>
+                    <div>
+                        <label>Exit Price</label>
+                        <input id="journalExit" type="number" inputmode="decimal" step="any" placeholder="0.00">
+                    </div>
+                </div>
+                <div class="form-row two-column">
+                    <div>
+                        <label>Position Size (USDT)</label>
+                        <input id="journalSize" type="number" inputmode="decimal" step="any" placeholder="0.00">
+                    </div>
+                    <div>
+                        <label>Direction</label>
+                        <select id="journalDirection">
+                            <option value="Long">Long</option>
+                            <option value="Short">Short</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <label>Notes (optional)</label>
+                    <textarea id="journalNotes" placeholder="Trade notes, strategy, etc."></textarea>
+                </div>
+                <div class="form-actions">
+                    <button id="addJournalEntry" class="primary"><i class="fa-solid fa-plus"></i> Add Entry</button>
+                    <button id="clearJournal" class="danger-btn"><i class="fa-solid fa-trash"></i> Clear All</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Journal Entries List -->
+        <div id="journalEntriesList">
+            <!-- Entries will be rendered here -->
+        </div>
+
+    </div>
+
+</div>
+
+<script>
+    (function() {
+        // ===============================
+        // TAB SWITCHING
+        // ===============================
+        const calcTabBtn = document.getElementById('calcTabBtn');
+        const journalTabBtn = document.getElementById('journalTabBtn');
+        const calculatorSection = document.getElementById('calculatorSection');
+        const journalSection = document.getElementById('journalSection');
+
+        calcTabBtn.addEventListener('click', () => {
+            calcTabBtn.classList.add('active');
+            journalTabBtn.classList.remove('active');
+            calculatorSection.classList.remove('hidden');
+            journalSection.classList.remove('active');
+        });
+
+        journalTabBtn.addEventListener('click', () => {
+            journalTabBtn.classList.add('active');
+            calcTabBtn.classList.remove('active');
+            calculatorSection.classList.add('hidden');
+            journalSection.classList.add('active');
+            renderJournal();
+        });
+
+        // ===============================
+        // CALCULATOR ELEMENTS
+        // ===============================
+        const balance = document.getElementById("balance");
+        const entry = document.getElementById("entry");
+        const stop = document.getElementById("stop");
+        const takeprofit = document.getElementById("takeprofit");
+        const leverage = document.getElementById("leverage");
+        const fee = document.getElementById("fee");
+        const marginMode = document.getElementById("marginMode");
+        const slider = document.getElementById("riskSlider");
+        const riskValue = document.getElementById("riskValue");
+
+        const margin = document.getElementById("margin");
+        const position = document.getElementById("position");
+        const riskAmount = document.getElementById("riskAmount");
+        const reward = document.getElementById("reward");
+        const rr = document.getElementById("rr");
+        const feeCost = document.getElementById("feeCost");
+        const liq = document.getElementById("liq");
+        const breakeven = document.getElementById("breakeven");
+        const status = document.getElementById("status");
+        const statusCard = document.getElementById("statusCard");
+
+        const calculateBtn = document.getElementById("calculate");
+        const resetBtn = document.getElementById("reset");
+        const copyBtn = document.getElementById("copy");
+        const saveToJournalBtn = document.getElementById("saveToJournalBtn");
+
+        const longBtn = document.getElementById("longBtn");
+        const shortBtn = document.getElementById("shortBtn");
+        let direction = "long";
+
+        // ===============================
+        // DIRECTION TOGGLE
+        // ===============================
+        function setDirection(dir) {
+            direction = dir;
+            if (dir === 'long') {
+                longBtn.classList.add('active');
+                shortBtn.classList.remove('active');
+            } else {
+                shortBtn.classList.add('active');
+                longBtn.classList.remove('active');
+            }
+            calculate();
+        }
+        longBtn.addEventListener('click', () => setDirection('long'));
+        shortBtn.addEventListener('click', () => setDirection('short'));
+
+        // ===============================
+        // RISK SLIDER
+        // ===============================
+        slider.addEventListener("input", () => {
+            riskValue.textContent = Number(slider.value).toFixed(1) + "%";
+            calculate();
+        });
+
+        // ===============================
+        // AUTO CALCULATE
+        // ===============================
+        [balance, entry, stop, takeprofit, leverage, fee, marginMode].forEach(el => {
+            el.addEventListener("input", calculate);
+            el.addEventListener("change", calculate);
+        });
+
+        // ===============================
+        // CORE CALCULATE
+        // ===============================
+        function calculate() {
+            const bal = parseFloat(balance.value);
+            const ep = parseFloat(entry.value);
+            const sl = parseFloat(stop.value);
+            const tp = parseFloat(takeprofit.value);
+            const lev = parseFloat(leverage.value.replace("x", ""));
+            const feePercent = parseFloat(fee.value);
+            const riskPercent = parseFloat(slider.value);
+
+            if (isNaN(bal) || isNaN(ep) || isNaN(sl)) {
+                position.textContent = "0.00";
+                riskAmount.textContent = "0.00";
+                reward.textContent = "0.00";
+                rr.textContent = "0 : 0";
+                margin.textContent = "0.00 USDT";
+                feeCost.textContent = "0.00";
+                liq.textContent = "--";
+                breakeven.textContent = "--";
+                status.textContent = "Safe";
+                statusCard.className = "result-card status-safe";
+                return;
+            }
+
+            const riskUSDT = bal * riskPercent / 100;
+            const stopDistance = Math.abs(ep - sl);
+            if (stopDistance <= 0) return;
+
+            const positionSize = riskUSDT / (stopDistance / ep);
+            const marginRequired = positionSize / lev;
+
+            let rewardUSDT = 0;
+            if (!isNaN(tp)) {
+                rewardUSDT = positionSize * (Math.abs(tp - ep) / ep);
+            }
+
+            let rrRatio = "--";
+            if (riskUSDT > 0 && rewardUSDT > 0) {
+                rrRatio = "1 : " + (rewardUSDT / riskUSDT).toFixed(2);
+            } else if (riskUSDT > 0 && rewardUSDT === 0) {
+                rrRatio = "1 : 0";
+            }
+
+            const feeImpact = positionSize * ((feePercent / 100) * 2);
+
+            let liquidation = 0;
+            if (direction === 'long') {
+                liquidation = ep - (ep / lev);
+            } else {
+                liquidation = ep + (ep / lev);
+            }
+
+            const breakevenPrice = ep + (ep * feePercent / 100);
+
+            let statusText = "Safe";
+            let statusClass = "status-safe";
+            if (riskPercent > 3 && riskPercent <= 5) {
+                statusText = "High";
+                statusClass = "status-high";
+            } else if (riskPercent > 5) {
+                statusText = "Danger";
+                statusClass = "status-danger";
+            }
+
+            const liquidationDistance = Math.abs(ep - liquidation);
+            if (liquidationDistance < stopDistance && !isNaN(liquidation) && liquidation > 0) {
+                if (window._lastWarning !== liquidationDistance + stopDistance) {
+                    alert("⚠ Stop Loss is too close to liquidation!");
+                    window._lastWarning = liquidationDistance + stopDistance;
+                }
+            }
+
+            position.textContent = positionSize.toFixed(2) + " USDT";
+            riskAmount.textContent = riskUSDT.toFixed(2) + " USDT";
+            reward.textContent = rewardUSDT.toFixed(2) + " USDT";
+            rr.textContent = rrRatio;
+            margin.textContent = marginRequired.toFixed(2) + " USDT";
+            feeCost.textContent = feeImpact.toFixed(2) + " USDT";
+            liq.textContent = liquidation.toFixed(4);
+            breakeven.textContent = breakevenPrice.toFixed(4);
+            status.textContent = statusText;
+            statusCard.className = "result-card " + statusClass;
+
+            try {
+                localStorage.setItem("balance", balance.value);
+                localStorage.setItem("risk", slider.value);
+                localStorage.setItem("leverage", leverage.value);
+                localStorage.setItem("marginMode", marginMode.value);
+                localStorage.setItem("fee", fee.value);
+            } catch (e) { /* ignore */ }
+        }
+
+        // ===============================
+        // COPY RESULTS
+        // ===============================
+        copyBtn.onclick = () => {
+            const text =
+                `Position Size: ${position.textContent}\n` +
+                `Risk: ${riskAmount.textContent}\n` +
+                `Reward: ${reward.textContent}\n` +
+                `RR: ${rr.textContent}\n` +
+                `Liquidation: ${liq.textContent}\n` +
+                `Breakeven: ${breakeven.textContent}\n` +
+                `Risk Status: ${status.textContent}`;
+            navigator.clipboard.writeText(text).then(() => {
+                alert("Copied!");
+            }).catch(() => {
+                alert("Copy failed, but here's the data:\n\n" + text);
+            });
+        };
+
+        // ===============================
+        // SAVE TO JOURNAL
+        // ===============================
+        saveToJournalBtn.onclick = () => {
+            const entryPrice = parseFloat(entry.value);
+            const stopPrice = parseFloat(stop.value);
+            const takeProfit = parseFloat(takeprofit.value);
+            const posSize = parseFloat(position.textContent);
+            const riskAmt = parseFloat(riskAmount.textContent);
+            const rewardAmt = parseFloat(reward.textContent);
+            const rrRatio = rr.textContent;
+            const bal = parseFloat(balance.value);
+
+            if (isNaN(entryPrice) || isNaN(stopPrice) || isNaN(posSize) || posSize <= 0) {
+                alert("Please calculate a valid trade first!");
+                return;
+            }
+
+            const journalEntry = {
+                id: Date.now(),
+                pair: "BTC/USDT",
+                entry: entryPrice,
+                exit: takeProfit || entryPrice * 1.01,
+                size: posSize,
+                direction: direction === 'long' ? 'Long' : 'Short',
+                risk: riskAmt,
+                reward: rewardAmt,
+                rr: rrRatio,
+                balance: bal,
+                notes: `Entry: ${entryPrice}, Stop: ${stopPrice}, TP: ${takeProfit || 'N/A'}`,
+                date: new Date().toLocaleString()
+            };
+
+            saveJournalEntry(journalEntry);
+            alert("Trade saved to journal!");
+        };
+
+        // ===============================
+        // JOURNAL FUNCTIONS
+        // ===============================
+        function getJournalEntries() {
+            try {
+                return JSON.parse(localStorage.getItem('tradingJournal')) || [];
+            } catch (e) {
+                return [];
+            }
+        }
+
+        function saveJournalEntry(entry) {
+            const entries = getJournalEntries();
+            entries.push(entry);
+            localStorage.setItem('tradingJournal', JSON.stringify(entries));
+        }
+
+        function deleteJournalEntry(id) {
+            let entries = getJournalEntries();
+            entries = entries.filter(e => e.id !== id);
+            localStorage.setItem('tradingJournal', JSON.stringify(entries));
+            renderJournal();
+        }
+
+        function clearAllJournal() {
+            if (confirm("Delete all journal entries?")) {
+                localStorage.removeItem('tradingJournal');
+                renderJournal();
+            }
+        }
+
+        function calculateJournalStats(entries) {
+            const total = entries.length;
+            if (total === 0) {
+                return { total: 0, winRate: 0, totalPnL: 0 };
+            }
+
+            let wins = 0;
+            let totalPnL = 0;
+            entries.forEach(e => {
+                const pnl = (e.exit - e.entry) * (e.direction === 'Long' ? 1 : -1) * (e.size / e.entry);
+                totalPnL += pnl;
+                if (pnl > 0) wins++;
+            });
+
+            return {
+                total,
+                winRate: (wins / total) * 100,
+                totalPnL
+            };
+        }
+
+        // ===============================
+        // RENDER JOURNAL
+        // ===============================
+        function renderJournal() {
+            const entries = getJournalEntries();
+            const listContainer = document.getElementById('journalEntriesList');
+            const stats = calculateJournalStats(entries);
+
+            // Update stats
+            document.getElementById('totalTrades').textContent = stats.total;
+            document.getElementById('winRate').textContent = stats.total > 0 ? stats.winRate.toFixed(1) + '%' : '0%';
+            const pnlEl = document.getElementById('totalPnL');
+            pnlEl.textContent = stats.totalPnL.toFixed(2);
+            pnlEl.className = 'stat-value' + (stats.totalPnL > 0 ? ' positive' : stats.totalPnL < 0 ? ' negative' : '');
+
+            if (entries.length === 0) {
+                listContainer.innerHTML = `
+                    <div class="empty-journal">
+                        <i class="fa-regular fa-book"></i>
+                        <p>No trades recorded yet.</p>
+                        <p style="font-size:13px;margin-top:8px;">Calculate a trade and click "Save" to add it.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            let html = '';
+            // Show newest first
+            const sorted = [...entries].reverse();
+            sorted.forEach(entry => {
+                const pnl = (entry.exit - entry.entry) * (entry.direction === 'Long' ? 1 : -1) * (entry.size / entry.entry);
+                const pnlColor = pnl > 0 ? '#22a65e' : pnl < 0 ? '#ff3b4a' : '#708090';
+                const pnlSymbol = pnl > 0 ? '+' : '';
+
+                html += `
+                    <div class="journal-entry">
+                        <div class="entry-header">
+                            <span class="entry-date"><i class="fa-regular fa-clock"></i> ${entry.date}</span>
+                            <div class="entry-actions">
+                                <button class="delete-entry" onclick="deleteJournalEntry(${entry.id})">
+                                    <i class="fa-solid fa-trash-can"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="entry-details">
+                            <span><span class="label">Pair:</span> ${entry.pair}</span>
+                            <span><span class="label">Direction:</span> ${entry.direction}</span>
+                            <span><span class="label">Entry:</span> ${entry.entry.toFixed(4)}</span>
+                            <span><span class="label">Exit:</span> ${entry.exit.toFixed(4)}</span>
+                            <span><span class="label">Size:</span> ${entry.size.toFixed(2)} USDT</span>
+                            <span><span class="label">P&L:</span> <span style="color:${pnlColor};font-weight:700;">${pnlSymbol}${pnl.toFixed(2)} USDT</span></span>
+                            <span><span class="label">Risk:</span> ${entry.risk.toFixed(2)} USDT</span>
+                            <span><span class="label">Reward:</span> ${entry.reward.toFixed(2)} USDT</span>
+                            <span><span class="label">R:R:</span> ${entry.rr}</span>
+                            <span><span class="label">Balance:</span> ${entry.balance.toFixed(2)} USDT</span>
+                        </div>
+                        ${entry.notes ? `<div class="entry-notes"><i class="fa-regular fa-note-sticky"></i> ${entry.notes}</div>` : ''}
+                    </div>
+                `;
+            });
+
+            listContainer.innerHTML = html;
+        }
+
+        // Make delete function global for onclick
+        window.deleteJournalEntry = deleteJournalEntry;
+
+        // ===============================
+        // JOURNAL FORM HANDLERS
+        // ===============================
+        document.getElementById('addJournalEntry').addEventListener('click', () => {
+            const pair = document.getElementById('journalPair').value || 'BTC/USDT';
+            const entryPrice = parseFloat(document.getElementById('journalEntry').value);
+            const exitPrice = parseFloat(document.getElementById('journalExit').value);
+            const size = parseFloat(document.getElementById('journalSize').value);
+            const direction = document.getElementById('journalDirection').value;
+            const notes = document.getElementById('journalNotes').value;
+
+            if (isNaN(entryPrice) || isNaN(exitPrice) || isNaN(size) || entryPrice <= 0 || exitPrice <= 0 || size <= 0) {
+                alert("Please fill in all fields with valid numbers.");
+                return;
+            }
+
+            const risk = Math.abs(entryPrice - exitPrice) / entryPrice * size;
+            const reward = risk; // simplified
+            const rrRatio = risk > 0 ? "1 : 1.00" : "0 : 0";
+
+            const entry = {
+                id: Date.now(),
+                pair,
+                entry: entryPrice,
+                exit: exitPrice,
+                size,
+                direction,
+                risk,
+                reward,
+                rr: rrRatio,
+                balance: parseFloat(balance.value) || 0,
+                notes: notes || '',
+                date: new Date().toLocaleString()
+            };
+
+            saveJournalEntry(entry);
+            renderJournal();
+
+            // Clear form
+            document.getElementById('journalEntry').value = '';
+            document.getElementById('journalExit').value = '';
+            document.getElementById('journalSize').value = '';
+            document.getElementById('journalNotes').value = '';
+
+            alert("Trade added to journal!");
+        });
+
+        document.getElementById('clearJournal').addEventListener('click', clearAllJournal);
+
+        // ===============================
+        // RESET
+        // ===============================
+        resetBtn.onclick = () => {
+            balance.value = "";
+            entry.value = "";
+            stop.value = "";
+            takeprofit.value = "";
+            slider.value = 5;
+            riskValue.textContent = "5.0%";
+            leverage.selectedIndex = 5;
+            fee.selectedIndex = 1;
+            marginMode.selectedIndex = 1;
+            position.textContent = "0.00";
+            riskAmount.textContent = "0.00";
+            reward.textContent = "0.00";
+            rr.textContent = "0 : 0";
+            margin.textContent = "0.00 USDT";
+            feeCost.textContent = "0.00";
+            liq.textContent = "--";
+            breakeven.textContent = "--";
+            status.textContent = "Safe";
+            statusCard.className = "result-card status-safe";
+            setDirection('long');
+            try {
+                localStorage.removeItem("balance");
+                localStorage.removeItem("risk");
+                localStorage.removeItem("leverage");
+                localStorage.removeItem("marginMode");
+                localStorage.removeItem("fee");
+            } catch (e) {}
+        };
+
+        // ===============================
+        // LOAD SAVED SETTINGS
+        // ===============================
+        window.onload = () => {
+            try {
+                const savedBalance = localStorage.getItem("balance");
+                const savedRisk = localStorage.getItem("risk");
+                const savedLeverage = localStorage.getItem("leverage");
+                const savedMarginMode = localStorage.getItem("marginMode");
+                const savedFee = localStorage.getItem("fee");
+
+                if (savedBalance) balance.value = savedBalance;
+                if (savedRisk) {
+                    slider.value = savedRisk;
+                    riskValue.textContent = Number(savedRisk).toFixed(1) + "%";
+                }
+                if (savedLeverage) leverage.value = savedLeverage;
+                if (savedMarginMode) marginMode.value = savedMarginMode;
+                if (savedFee) fee.value = savedFee;
+            } catch (e) { /* ignore */ }
+            calculate();
+            renderJournal();
+        };
+
+        // ===============================
+        // INITIAL CALCULATE
+        // ===============================
+        setTimeout(calculate, 20);
+    })();
+</script>
+
+</body>
+</html>
