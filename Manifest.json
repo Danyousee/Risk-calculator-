@@ -1,28 +1,26 @@
 {
-  "background_color": "#ffffff",
-  "dir": "ltr",
-  "display": "standalone",
-  "name": "Risk Calc",
-  "orientation": "any",
-  "scope": "/",
+  "name": "Perpetual Risk Calculator",
   "short_name": "Risk Calc",
-  "start_url": "/https://danyousee.github.io/Risk-calculator-/",
+  "id": "perpetual-risk-calculator",
+  "description": "Professional trading risk calculator with journal for tracking trades and managing risk effectively.",
+  "start_url": ".",
+  "display": "standalone",
+  "orientation": "portrait",
   "theme_color": "#1565ff",
+  "background_color": "#f4f8ff",
+  "scope": ".",
   "icons": [
     {
-      "src": "https://danyousee.github.io/Risk-calculator-/launchericon-192x192.png",
-      "type": "image/png",
+      "src": "launchericon-192x192.png",
       "sizes": "192x192",
-      "isSquare": true,
-      "isPng": true,
-      "isWebp": false,
-      "isJpg": false,
-      "width": 192,
-      "is512x512": false,
-      "is256x256": false,
-      "is192x192": true
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "launchericon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
     }
-  ],
-  "id": "perpetual-risk-calculator",
-  "description": "Professional trading risk calculator with journal for tracking trades and managing risk effectively."
+  ]
 }
