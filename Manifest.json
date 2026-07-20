@@ -1,0 +1,16 @@
+{
+  "name": "Perpetual Risk Calculator",
+  "short_name": "Risk Calc",
+  "description": "Professional trading risk calculator",
+  "start_url": ".",
+  "display": "standalone",
+  "background_color": "#f4f8ff",
+  "theme_color": "#1565ff",
+  "icons": [
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    }
+  ]
+}
