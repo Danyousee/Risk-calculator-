@@ -50,23 +50,15 @@ self.addEventListener('fetch', event => {
     event.respondWith(
         caches.match(event.request)
             .then(cachedResponse => {
-                // Return cached response if found
                 if (cachedResponse) {
                     return cachedResponse;
                 }
-
-                // Otherwise fetch from network
                 return fetch(event.request)
                     .then(response => {
-                        // Don't cache if not a valid response
                         if (!response || response.status !== 200 || response.type !== 'basic') {
                             return response;
                         }
-
-                        // Clone the response
                         const responseToCache = response.clone();
-
-                        // Cache the fetched response
                         caches.open(CACHE_NAME)
                             .then(cache => {
                                 try {
@@ -75,21 +67,41 @@ self.addEventListener('fetch', event => {
                                     console.log('Service Worker: Cache put error:', e);
                                 }
                             });
-
                         return response;
                     })
                     .catch(() => {
-                        // Offline fallback
-                        return new Response('Offline - Please check your internet connection.', {
-                            status: 503,
-                            statusText: 'Service Unavailable'
+                        return new Response(`
+                            <!DOCTYPE html>
+                            <html>
+                            <head>
+                                <meta charset="UTF-8">
+                                <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                                <title>Offline</title>
+                                <style>
+                                    body { font-family: Inter, sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; background: #f4f8ff; color: #1d3557; text-align: center; padding: 20px; }
+                                    .offline-container { max-width: 400px; }
+                                    h1 { font-size: 28px; margin-bottom: 12px; }
+                                    p { color: #6b7b93; line-height: 1.6; }
+                                    .icon { font-size: 64px; margin-bottom: 20px; }
+                                </style>
+                            </head>
+                            <body>
+                                <div class="offline-container">
+                                    <div class="icon">📡</div>
+                                    <h1>You're Offline</h1>
+                                    <p>Please check your internet connection.</p>
+                                    <p style="font-size:14px;margin-top:12px;">Your data is safely stored locally.</p>
+                                </div>
+                            </body>
+                            </html>
+                        `, {
+                            headers: { 'Content-Type': 'text/html' }
                         });
                     });
             })
     );
 });
 
-// Handle messages from the client
 self.addEventListener('message', event => {
     if (event.data && event.data.type === 'SKIP_WAITING') {
         self.skipWaiting();
